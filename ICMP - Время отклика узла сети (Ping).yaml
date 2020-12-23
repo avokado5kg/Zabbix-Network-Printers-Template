@@ -1,0 +1,108 @@
+zabbix_export:
+  version: '5.2'
+  date: '2020-12-23T10:58:25Z'
+  groups:
+    -
+      name: 'Express-III (все устройства)'
+    -
+      name: Templates/iLo
+    -
+      name: 'Templates/Network Devices'
+    -
+      name: 'Templates/Operating Systems'
+    -
+      name: Templates/Ping
+    -
+      name: 'Templates/Servers Hardware'
+    -
+      name: Шаблоны
+    -
+      name: 'Шаблоны/Источники бесперебойного питания'
+    -
+      name: 'Шаблоны/Серверы и виртуальные машины'
+    -
+      name: 'Шаблоны/Сетевые устройства'
+  templates:
+    -
+      template: 'Template ICMP Ping icmppingsec'
+      name: 'ICMP - Время отклика узла сети (Ping)'
+      description: |
+        Шаблон проверки доступности устройств в локальной сети по протоколу ICMP, возвращает время отклика устройства. 
+            Частота  проверки по умолчанию составляет каждые 30 секунд, при необходимости для критичных узлов сети может быть уменьшена до 1 секунды. (Инструкция по изменению параметров находится в разделе Wiki на http://sportal.brnv.rw)
+             Оповещение пользователей сработает в случае, если в течение 5 минут 
+         время отклика устройства будет равно 0 миллисекунд.
+      groups:
+        -
+          name: 'Express-III (все устройства)'
+        -
+          name: Templates/iLo
+        -
+          name: 'Templates/Network Devices'
+        -
+          name: 'Templates/Operating Systems'
+        -
+          name: Templates/Ping
+        -
+          name: 'Templates/Servers Hardware'
+        -
+          name: Шаблоны
+        -
+          name: 'Шаблоны/Источники бесперебойного питания'
+        -
+          name: 'Шаблоны/Серверы и виртуальные машины'
+        -
+          name: 'Шаблоны/Сетевые устройства'
+      applications:
+        -
+          name: '01. Время отклика узла сети (ping)'
+      items:
+        -
+          name: IP-адрес
+          type: EXTERNAL
+          key: 'APCIP.sh[{HOST.IP}]'
+          delay: 1h
+          history: 1d
+          trends: '0'
+          value_type: TEXT
+          applications:
+            -
+              name: '01. Время отклика узла сети (ping)'
+        -
+          name: 'Время отклика узла сети (ping)'
+          type: SIMPLE
+          key: icmppingsec
+          delay: 10s
+          history: 7d
+          trends: 7d
+          value_type: FLOAT
+          units: s
+          applications:
+            -
+              name: '01. Время отклика узла сети (ping)'
+          triggers:
+            -
+              expression: '{max(5m)}=0'
+              recovery_mode: RECOVERY_EXPRESSION
+              recovery_expression: '{min(1m)}<>0'
+              name: 'Время отклика:'
+              opdata: '{ITEM.LASTVALUE}'
+              priority: DISASTER
+              manual_close: 'YES'
+              tags:
+                -
+                  tag: 'Состояние доступности'
+      tags:
+        -
+          tag: IP
+          value: '{HOST.IP}'
+  graphs:
+    -
+      name: 'Время отклика и доступность устройства в сети'
+      ymin_type_1: FIXED
+      graph_items:
+        -
+          color: 199C0D
+          calc_fnc: ALL
+          item:
+            host: 'Template ICMP Ping icmppingsec'
+            key: icmppingsec

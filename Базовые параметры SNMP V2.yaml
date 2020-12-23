@@ -1,0 +1,121 @@
+zabbix_export:
+  version: '5.2'
+  date: '2020-12-23T10:58:39Z'
+  groups:
+    -
+      name: Шаблоны
+    -
+      name: 'Шаблоны/Источники бесперебойного питания'
+    -
+      name: Шаблоны/СХД
+    -
+      name: 'Шаблоны/Сетевые устройства'
+  templates:
+    -
+      template: 'Basic SNMP V2 Settings'
+      name: 'Базовые параметры SNMP V2'
+      groups:
+        -
+          name: Шаблоны
+        -
+          name: 'Шаблоны/Источники бесперебойного питания'
+        -
+          name: Шаблоны/СХД
+        -
+          name: 'Шаблоны/Сетевые устройства'
+      applications:
+        -
+          name: '02. Общая системная информация'
+      items:
+        -
+          name: 'Контактная информация'
+          type: SNMP_AGENT
+          snmp_oid: .1.3.6.1.2.1.1.4.0
+          key: sysContact.0
+          delay: 10m
+          history: 1h
+          trends: '0'
+          value_type: TEXT
+          inventory_link: POC_1_NAME
+          applications:
+            -
+              name: '02. Общая системная информация'
+        -
+          name: 'Размещение устройства'
+          type: SNMP_AGENT
+          snmp_oid: .1.3.6.1.2.1.1.6.0
+          key: sysLocation.0
+          delay: 10m
+          history: 1h
+          trends: '0'
+          value_type: TEXT
+          inventory_link: LOCATION
+          applications:
+            -
+              name: '02. Общая системная информация'
+        -
+          name: 'Системное имя устройства'
+          type: SNMP_AGENT
+          snmp_oid: .1.3.6.1.2.1.1.5.0
+          key: sysName.0
+          delay: 10m
+          history: 1h
+          trends: '0'
+          value_type: TEXT
+          inventory_link: NAME
+          applications:
+            -
+              name: '02. Общая системная информация'
+        -
+          name: 'Время работы устройства (Uptime)'
+          type: SNMP_AGENT
+          snmp_oid: .1.3.6.1.2.1.1.3.0
+          key: sysUpTime.0
+          delay: 10m
+          history: 1w
+          trends: 1095d
+          units: s
+          applications:
+            -
+              name: '02. Общая системная информация'
+          preprocessing:
+            -
+              type: MULTIPLIER
+              parameters:
+                - '0.01'
+        -
+          name: 'Доступность SNMP'
+          type: INTERNAL
+          key: 'zabbix[host,snmp,available]'
+          history: 1w
+          trends: '0'
+          applications:
+            -
+              name: '02. Общая системная информация'
+          triggers:
+            -
+              expression: '{max(5m)}=0'
+              name: 'Нет данных от агента SNMP'
+              opdata: '{ITEM.LASTVALUE}'
+              priority: INFO
+              description: 'Необходимо проверить настройки SNMP на наблюдаемом устройстве и сверить {$SNMP_COMMUNITY} в свойствах узла сети в системе мониторинга.'
+              manual_close: 'YES'
+              dependencies:
+                -
+                  name: 'Время отклика:'
+                  expression: '{Template ICMP Ping icmppingsec:icmppingsec.max(5m)}=0'
+                  recovery_expression: '{Template ICMP Ping icmppingsec:icmppingsec.min(1m)}<>0'
+              tags:
+                -
+                  tag: IP
+                  value: '{HOST.IP}'
+                -
+                  tag: SNMP
+                  value: 'Не настроены правила получения информации по SNMP'
+      tags:
+        -
+          tag: IP
+          value: '{HOST.IP}'
+        -
+          tag: 'Агент SNMP'
+          value: 'Требуется настройка'
