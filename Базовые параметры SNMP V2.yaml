@@ -1,15 +1,9 @@
 zabbix_export:
   version: '5.2'
-  date: '2020-12-23T10:58:39Z'
+  date: '2020-12-23T11:03:18Z'
   groups:
     -
       name: Шаблоны
-    -
-      name: 'Шаблоны/Источники бесперебойного питания'
-    -
-      name: Шаблоны/СХД
-    -
-      name: 'Шаблоны/Сетевые устройства'
   templates:
     -
       template: 'Basic SNMP V2 Settings'
@@ -17,12 +11,6 @@ zabbix_export:
       groups:
         -
           name: Шаблоны
-        -
-          name: 'Шаблоны/Источники бесперебойного питания'
-        -
-          name: Шаблоны/СХД
-        -
-          name: 'Шаблоны/Сетевые устройства'
       applications:
         -
           name: '02. Общая системная информация'

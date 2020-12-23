@@ -1,57 +1,21 @@
 zabbix_export:
   version: '5.2'
-  date: '2020-12-23T10:58:25Z'
+  date: '2020-12-23T11:02:48Z'
   groups:
     -
-      name: 'Express-III (все устройства)'
-    -
-      name: Templates/iLo
-    -
-      name: 'Templates/Network Devices'
-    -
-      name: 'Templates/Operating Systems'
-    -
-      name: Templates/Ping
-    -
-      name: 'Templates/Servers Hardware'
-    -
       name: Шаблоны
-    -
-      name: 'Шаблоны/Источники бесперебойного питания'
-    -
-      name: 'Шаблоны/Серверы и виртуальные машины'
-    -
-      name: 'Шаблоны/Сетевые устройства'
   templates:
     -
       template: 'Template ICMP Ping icmppingsec'
       name: 'ICMP - Время отклика узла сети (Ping)'
       description: |
         Шаблон проверки доступности устройств в локальной сети по протоколу ICMP, возвращает время отклика устройства. 
-            Частота  проверки по умолчанию составляет каждые 30 секунд, при необходимости для критичных узлов сети может быть уменьшена до 1 секунды. (Инструкция по изменению параметров находится в разделе Wiki на http://sportal.brnv.rw)
+            Частота  проверки по умолчанию составляет каждые 30 секунд, при необходимости для критичных узлов сети может быть уменьшена до 1 секунды. 
              Оповещение пользователей сработает в случае, если в течение 5 минут 
          время отклика устройства будет равно 0 миллисекунд.
       groups:
         -
-          name: 'Express-III (все устройства)'
-        -
-          name: Templates/iLo
-        -
-          name: 'Templates/Network Devices'
-        -
-          name: 'Templates/Operating Systems'
-        -
-          name: Templates/Ping
-        -
-          name: 'Templates/Servers Hardware'
-        -
           name: Шаблоны
-        -
-          name: 'Шаблоны/Источники бесперебойного питания'
-        -
-          name: 'Шаблоны/Серверы и виртуальные машины'
-        -
-          name: 'Шаблоны/Сетевые устройства'
       applications:
         -
           name: '01. Время отклика узла сети (ping)'
