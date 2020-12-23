@@ -10,13 +10,8 @@ zabbix_export:
       name: 'Шаблоны/Сетевые принтеры'
   templates:
     -
-<<<<<<< HEAD
-      template: 'Network Printers SNMPv2'
-      name: 'Network Printers SNMPv2'
-=======
       template: 'LLD Supplies For Network Printers SNMPv2'
       name: 'LLD Supplies For Network Printers SNMPv2'
->>>>>>> 94af1697fb26f2532610690f0443b6c39fb5aef8
       templates:
         -
           name: 'Basic SNMP V2 Settings'
