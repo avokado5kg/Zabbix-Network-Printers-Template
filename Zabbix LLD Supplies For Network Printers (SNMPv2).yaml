@@ -1,0 +1,212 @@
+zabbix_export:
+  version: '5.2'
+  date: '2020-12-23T10:29:03Z'
+  groups:
+    -
+      name: 'Сетевые принтеры'
+    -
+      name: Шаблоны
+    -
+      name: 'Шаблоны/Сетевые принтеры'
+  templates:
+    -
+      template: 'Network Printers SNMPv2'
+      name: 'Network Printers SNMPv2'
+      templates:
+        -
+          name: 'Basic SNMP V2 Settings'
+        -
+          name: 'Template ICMP Ping icmppingsec'
+      groups:
+        -
+          name: 'Сетевые принтеры'
+        -
+          name: Шаблоны
+        -
+          name: 'Шаблоны/Сетевые принтеры'
+      applications:
+        -
+          name: '03. Общее состояние системы'
+        -
+          name: RAW
+      items:
+        -
+          name: 'Модель устройства'
+          type: SNMP_AGENT
+          snmp_oid: .1.3.6.1.2.1.25.3.2.1.3.1
+          key: deviceModel.0
+          delay: 10m
+          history: 1h
+          trends: '0'
+          value_type: TEXT
+          applications:
+            -
+              name: '02. Общая системная информация'
+          preprocessing:
+            -
+              type: RTRIM
+              parameters:
+                - Series
+            -
+              type: TRIM
+              parameters:
+                - 'bizhub '
+        -
+          name: 'Счетчик срока службы принтера'
+          type: SNMP_AGENT
+          snmp_oid: .1.3.6.1.2.1.43.10.2.1.4.1.1
+          key: prtMarkerLifeCount
+          history: 1w
+          applications:
+            -
+              name: '03. Общее состояние системы'
+          valuemap:
+            name: 'Printer status'
+          preprocessing:
+            -
+              type: DISCARD_UNCHANGED
+              parameters:
+                - ''
+      discovery_rules:
+        -
+          name: 'Обнаружение картриджей'
+          type: SNMP_AGENT
+          snmp_oid: 'discovery[{#SNMPVALUE},.1.3.6.1.2.1.43.11.1.1.6,{#COLOR},.1.3.6.1.2.1.43.12.1.1.4]'
+          key: prtMarkerSuppliesDescription
+          delay: '{$LLD_TIMEOUT};wd1-5h9-16'
+          filter:
+            conditions:
+              -
+                macro: '{#SNMPVALUE}'
+                value: '@Filter Waste Toner Box'
+                operator: NOT_MATCHES_REGEX
+                formulaid: A
+          lifetime: 1d
+          item_prototypes:
+            -
+              name: 'Состояние картриджа $1 {#COLOR}'
+              type: CALCULATED
+              key: 'prtMarkerSuppliesCapacity[{#SNMPVALUE}]'
+              delay: 10m
+              history: 1d
+              units: '%'
+              params: '100*last("prtMarkerSuppliesLevel[{#SNMPVALUE}]")/last("prtMarkerSuppliesMaxCapacity[{#SNMPVALUE}]")'
+              application_prototypes:
+                -
+                  name: '04. Состояние картриджей (уровень тонера, чернил)'
+              preprocessing:
+                -
+                  type: DISCARD_UNCHANGED_HEARTBEAT
+                  parameters:
+                    - '7200'
+              trigger_prototypes:
+                -
+                  expression: '{last()}<10'
+                  name: '{#SNMPVALUE} is low on printer {HOST.NAME}'
+                  priority: INFO
+                  manual_close: 'YES'
+            -
+              name: 'Уровень чернил $1'
+              type: SNMP_AGENT
+              snmp_oid: '.1.3.6.1.2.1.43.11.1.1.9.{#SNMPINDEX}'
+              key: 'prtMarkerSuppliesLevel[{#SNMPVALUE}]'
+              delay: 10m
+              history: 1h
+              trends: '0'
+              applications:
+                -
+                  name: RAW
+            -
+              name: 'Максимальная ёмкость картриджа $1'
+              type: SNMP_AGENT
+              snmp_oid: '.1.3.6.1.2.1.43.11.1.1.8.{#SNMPINDEX}'
+              key: 'prtMarkerSuppliesMaxCapacity[{#SNMPVALUE}]'
+              delay: 10m
+              history: 1h
+              trends: '0'
+              applications:
+                -
+                  name: RAW
+          graph_prototypes:
+            -
+              name: 'Состояние картриджа {#SNMPVALUE}'
+              width: '300'
+              ymin_type_1: FIXED
+              ymax_type_1: FIXED
+              graph_items:
+                -
+                  sortorder: '1'
+                  color: 1A7C11
+                  item:
+                    host: 'Network Printers SNMPv2'
+                    key: 'prtMarkerSuppliesCapacity[{#SNMPVALUE}]'
+      tags:
+        -
+          tag: IP
+          value: '{HOST.IP}'
+      macros:
+        -
+          macro: '{$LLD_TIMEOUT}'
+          value: 5m
+        -
+          macro: '{$SNMP_COMMUNITY}'
+          type: SECRET_TEXT
+      dashboards:
+        -
+          name: Printer
+          widgets:
+            -
+              type: GRAPH_PROTOTYPE
+              width: '24'
+              height: '5'
+              fields:
+                -
+                  type: INTEGER
+                  name: columns
+                  value: '1'
+                -
+                  type: INTEGER
+                  name: rows
+                  value: '1'
+                -
+                  type: INTEGER
+                  name: source_type
+                  value: '2'
+        -
+          name: 'Состояние картриджей'
+          widgets:
+            -
+              type: GRAPH_PROTOTYPE
+              name: 'Состояние картриджа {#SNMPVALUE}'
+              width: '23'
+              height: '11'
+              fields:
+                -
+                  type: INTEGER
+                  name: rows
+                  value: '3'
+                -
+                  type: GRAPH_PROTOTYPE
+                  name: graphid
+                  value:
+                    name: 'Состояние картриджа {#SNMPVALUE}'
+                    host: 'Network Printers SNMPv2'
+  value_maps:
+    -
+      name: 'Printer status'
+      mappings:
+        -
+          value: '1'
+          newvalue: other
+        -
+          value: '2'
+          newvalue: unknown
+        -
+          value: '3'
+          newvalue: idle
+        -
+          value: '4'
+          newvalue: printing
+        -
+          value: '5'
+          newvalue: warmup
